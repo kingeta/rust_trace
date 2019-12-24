@@ -34,3 +34,5 @@ Scene ??
 Vector
 - Vectors
 -- Implement colour stuff so that colours are vectors/derived from vectors
+
+git-ignore *.png probably
