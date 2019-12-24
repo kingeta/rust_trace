@@ -79,24 +79,30 @@ fn bg_colour(d: Vec3) -> Colour {
 
 //// Whether something can render
 pub trait Render {
-    fn render(&self, eye: Vec3, looking: Vec3, global_up: Vec3, scene: Vec<Box<dyn Object>>, width: u32, height: u32, samples: u32, filename: String);
+    fn render(&self, scene: Vec<Box<dyn Object>>, width: u32, height: u32, samples: u32, filename: String);
 }
 
 //// A pinhole camera
 pub struct SimpleCamera {
+    // x-direction fov
     pub fov: f32,
+    pub position: Vec3,
+    pub looking: Vec3,
+    pub global_up: Vec3,
 }
 
 impl Render for SimpleCamera {
-    fn render(&self, eye: Vec3, looking: Vec3, global_up: Vec3, scene: Vec<Box<dyn Object>>, width: u32, height: u32, samples: u32, filename: String) {
+    fn render(&self, scene: Vec<Box<dyn Object>>, width: u32, height: u32, samples: u32, filename: String) {
         // The resulting image
         let mut finalimg: RgbImage = ImageBuffer::new(width, height);
         // The other 2 vectors for an orthonormal basis
-        let (side, up) = directions(looking, global_up);
+        let (side, up) = directions(self.looking, self.global_up);
 
         let mut direction: Vec3;
         let mut u: f32;
         let mut v: f32;
+
+        let h = 1./(self.fov/2.).tan();
 
         // The resulting colour at a point
         let mut col: Colour;
@@ -114,9 +120,10 @@ impl Render for SimpleCamera {
                 // Maybe these constants are off; unknown
                 u += (random_float(&mut seed) - 0.5)/(height as f32 - 1.)*2.;
                 v += (random_float(&mut seed) - 0.5)/(height as f32 - 1.)*2.;
-                direction = (3. * looking + u * side + v * up).normalise();
+                // originally h = 3.
+                direction = (h * self.looking + u * side + v * up).normalise();
     
-                col += trace(eye, direction, &scene, 4, &mut seed) //* (1./SAMPLES as f32);
+                col += trace(self.position, direction, &scene, 4, &mut seed) //* (1./SAMPLES as f32);
             }
     
             *pixel = (col / samples as f32).clamp().to_rgb();

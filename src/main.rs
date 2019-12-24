@@ -67,15 +67,13 @@ fn main() {
 
     const SAMPLES: u32 = 32;
 
-    // Set up the resulting image
-    let mut img: RgbImage = ImageBuffer::new(width, height);
 
     // Setting up the camera
     let eye = Vec3::new(0., 0.2, 0.);
     let looking = Vec3::new(0., -0.051, 1.);
     let global_up = Vec3::new(0., 1., 0.);
-    let (side, up) = directions(looking, global_up);
 
+    
     // Setting up the scene
     // Setting up the spheres
 
@@ -131,7 +129,12 @@ fn main() {
 
     //let mut seed: u32 = SystemTime::now().duration_since(UNIX_EPOCH).ok().unwrap().as_millis() as u32;
 
-    let cam = SimpleCamera {fov: 1.};
+    let cam = SimpleCamera {
+        fov: PI/3., //0.6435
+        position: eye,
+        looking: looking,
+        global_up: global_up,
+    };
 
-    cam.render(eye, looking, global_up, shapes, width, height, SAMPLES, "result2.png".to_string());
+    cam.render(shapes, width, height, SAMPLES, "new_result.png".to_string());
 }
