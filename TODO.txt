@@ -1,0 +1,36 @@
+Separate out files more
+
+Make get_min/get_min_index return optionals instead of having weird behaviour for items not in list
+
+Make things into traits so that I can finally implement image textures etc
+
+Improve scene; make it into a struct instead of a single slice:
+
+- Improve the background function somehow; make it part of scene
+
+- Make some sort of scene intersection function, ideally returning an optional tuple of what was hit (index I guess) and how far away it was hit
+  (note; could return where the hit was; instead of bumping intersection with normal, just ignore intersections of distance less than epsilon)
+
+-- This would allow for raymarching etc with different scene intersection functions
+
+
+Separate files:
+
+(Where does the trace function go? Maybe render file with trace function, perhaps world intersections)
+
+Materials
+- Structure
+- Brdfs
+- Metal, glass etc
+Textures
+- Structure
+- Flat, checkered, image based etc
+Primitives
+- Some trait thing
+- Spheres, planes, boxes, triangles ideally
+Scene ??
+- Some background functions
+- Scene intersections perhaps, scene structure
+Vector
+- Vectors
+-- Implement colour stuff so that colours are vectors/derived from vectors
