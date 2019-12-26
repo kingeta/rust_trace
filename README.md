@@ -1,3 +1,3 @@
 Now this is what I call raytracing
 
-![rays](big_result_2.png)
+![rays](3_small_balls.png)
