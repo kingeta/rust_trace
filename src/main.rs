@@ -21,15 +21,15 @@ fn main() {
     let width: u32;
     let height: u32;
 
-    if false {
-        width = 3840 * 2;
-        height = 2160 * 2;
+    if true {
+        width = 3840;
+        height = 2160;
     } else {
         width = 640;
-        height = 320;    
+        height = 320;
     }
 
-    const SAMPLES: u32 = 8;
+    const SAMPLES: u32 = 1024;
 
 
     // Setting up the camera
@@ -53,7 +53,7 @@ fn main() {
     let orb = Sphere {
         centre: Vec3::new(1.8, 1., 0.),
         radius: 1.,
-        texture: |_| {Colour::white()},
+        texture: |_| {Colour::new(1.0, 0.8, 0.8)},
         material: GLASS,
     };
 
@@ -62,7 +62,7 @@ fn main() {
         centre: Vec3::new(0., 0.7, 0.),
         radius: 0.7,
         //texture: |v| { text_check(v) },
-        texture: |_| { Colour::white() },
+        texture: |_| { Colour::new(0.2, 0.2, 0.2) },
         material: LAMBERT,
     };
 
@@ -110,7 +110,7 @@ fn main() {
         centre: Vec3::new(-1.3, 0.5, 0.),
         radius: 0.5,
         texture: |_| { Colour::new(1., 0.8, 0.) },
-        material: LIGHT,
+        material: MIRROR, //LIGHT
     };
 
     let cube = AABB {
@@ -129,33 +129,35 @@ fn main() {
     };
 
     let rect = Rect_XY {
-        x0: 3, x1: 5,
-        y0: 1, y1: 3,
-        k: -2,
+        x0: 3., x1: 5.,
+        y0: 1., y1: 3.,
+        k: -2.,
         material: LAMBERT,
         colour: Colour::white(),
-    }
+    };
 
     //let spheres = [small, big, other, left];
-    let shapes: Vec<Box<dyn Object>> = vec![Box::new(floor), Box::new(orb), Box::new(rect), Box::new(light)];
+    let shapes: Vec<Box<dyn Object>> = vec![Box::new(floor), Box::new(orb), Box::new(check), Box::new(light)];
 
     //let mut seed: u32 = SystemTime::now().duration_since(UNIX_EPOCH).ok().unwrap().as_millis() as u32;
 
-    let cam = SimpleCamera {
+    /*let cam = SimpleCamera {
         fov: PI/4., //0.6435
         position: eye,
         looking: looking,
         global_up: global_up,
-    };
-
-    /*let cam = DOFCamera {
-        fov: PI/4., //0.6435
-        position: eye,
-        looking: looking,
-        global_up: global_up,
-        aperture: 0.3,
-        focus: 3.42,
     };*/
 
+    let cam = DOFCamera {
+        fov: PI/4., //0.6435
+        position: eye,
+        looking: looking,
+        global_up: global_up,
+        aperture: 0.2,
+        //focus: 3.42,
+        focus: (Vec3::new(0., 0.7, 0.)  + Vec3::new(0., 0.7, 0.) - eye).length(),
+    };
+
+    println!("{}", cam.focus);
     cam.render(shapes, width, height, SAMPLES, "new_result.png".to_string());
 }

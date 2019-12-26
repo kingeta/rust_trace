@@ -1,4 +1,4 @@
 /target
 **/*.rs.bk
 *.png
-!big_result_2.png
+!3_small_balls.png

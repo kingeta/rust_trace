@@ -83,7 +83,7 @@ fn bg_colour(d: Vec3) -> Colour {
     let val = ((1. + d.y())/2.).powf(1.5);
     let sky = (Colour::new(0.45, 0.68, 0.87) * (1.-val) + Colour::white() *  val) * 0.4;
 
-    return sunlight * 1. * 0. + sky;
+    return sunlight * 1. + sky;
 }
 
 //// Whether something can render
@@ -178,8 +178,8 @@ impl Render for DOFCamera {
         // Random variables for aperture
         let mut rand_disc: Vec3;
         let mut offset: Vec3;
-        let horizontal = 2. * half_width * self.focus * side;
-        let vertical = 2. * half_height * self.focus * up;
+        //let horizontal = 2. * 1./half_width * self.aperture * side;
+        //let vertical = 2. * 1./half_height * self.aperture * up;
 
 
         for (x, y, pixel) in finalimg.enumerate_pixels_mut() {
@@ -197,7 +197,7 @@ impl Render for DOFCamera {
                 
                 // Aperture part:
                 rand_disc = random_unit_disc(&mut seed);
-                offset = side * rand_disc.x() + up * rand_disc.y();
+                offset = (side * rand_disc.x() + up * rand_disc.y()) * self.aperture;
                 direction = ((1./half_height) * self.looking + u * side + v * up).normalise() * self.focus;
                 
                 col += trace(self.position + offset, (direction - offset).normalise(), &scene, 4, &mut seed) //* (1./SAMPLES as f32);

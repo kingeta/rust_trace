@@ -136,14 +136,14 @@ pub struct Rect_XY {
 impl Object for Rect_XY {
     fn intersect(&self, o: Vec3, d: Vec3) -> Option<Hit> {
         let t = (self.k - o.z()) / d.z();
-        let x = r.x() + t * d.x();
-        let y = r.y() + t * d.y();
+        let x = o.x() + t * d.x();
+        let y = o.y() + t * d.y();
 
-        if x < x0 || x > x1 || y < y0 || y > y1 {
+        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
             return None;
         }
 
-        Some(Hit(t, o + t * d, self.material, self.colour, Vec3::new(0., 0., 1.)))
+        Some(Hit(t, o + t * d, self.material, self.colour, Vec3::new(0., 0., -1.)))
     }
 }
 
