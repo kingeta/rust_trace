@@ -4,7 +4,6 @@ use std::ops::{Add, Sub, Mul, Div, AddAssign, Neg};
 
 pub const PI: f32 = 3.14159;
 
-
 // Vector construct
 #[derive(Copy, Clone)]
 pub struct Vec3 {
@@ -18,7 +17,7 @@ pub fn dot(u: Vec3, v: Vec3) -> f32 {
 pub fn cross(u: Vec3, v: Vec3) -> Vec3 {
     Vec3::new(
             u.value[1]*v.value[2] - u.value[2]*v.value[1],
-            u.value[2]*v.value[0] - u.value[0]*u.value[2],
+            u.value[2]*v.value[0] - u.value[0]*v.value[2],
             u.value[0]*v.value[1] - u.value[1]*v.value[0])
 }
 

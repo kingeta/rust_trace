@@ -13,6 +13,18 @@ use super::material::random_float;
     pub fn(Vec3) -> Colour,
 );*/
 
+
+fn random_unit_disc(seed: &mut u32) -> Vec3 {
+    let mut p = 2. * Vec3::new(random_float(seed), random_float(seed), 0.) - Vec3::new(1., 1., 0.);
+
+    while dot(p, p) >= 1. {
+        p = 2. * Vec3::new(random_float(seed), random_float(seed), 0.) - Vec3::new(1., 1., 0.);
+    }
+
+    p
+}
+
+
 fn trace<T: Object>(o: Vec3, d: Vec3, scene: &T, depth: u32, mut seed: &mut u32) -> Colour {
     //// Raytrace a whole scene
     if depth == 0 {
@@ -54,9 +66,7 @@ fn directions(looking: Vec3, global_up: Vec3) -> (Vec3, Vec3) {
     // Convert (unit) vectors for viewing direction and global up into orthonormal basis for camera
     // 'local' up points approx towards global up but perp to looking
     // Only returns the unknown vectors; program already has looking
-    //let side = global_up.cross(looking).normalize();
     let side = cross(global_up, looking).normalise();
-    //return (side, looking.cross(side));
     return (side, cross(looking, side));
 }
 
@@ -73,9 +83,8 @@ fn bg_colour(d: Vec3) -> Colour {
     let val = ((1. + d.y())/2.).powf(1.5);
     let sky = (Colour::new(0.45, 0.68, 0.87) * (1.-val) + Colour::white() *  val) * 0.4;
 
-    return sunlight * 1. + sky;
+    return sunlight * 1. * 0. + sky;
 }
-
 
 //// Whether something can render
 pub trait Render {
@@ -124,6 +133,74 @@ impl Render for SimpleCamera {
                 direction = (h * self.looking + u * side + v * up).normalise();
     
                 col += trace(self.position, direction, &scene, 4, &mut seed) //* (1./SAMPLES as f32);
+            }
+    
+            *pixel = (col / samples as f32).clamp().to_rgb();
+    
+        }
+    
+    finalimg.save(filename).unwrap();
+    println!("All done");    
+    }
+}
+
+pub struct DOFCamera {
+    // x-direction fov
+    pub fov: f32,
+    pub position: Vec3,
+    pub looking: Vec3,
+    pub global_up: Vec3,
+    pub aperture: f32, // Camera aperture
+    pub focus: f32, // Focal distance if that's the right word or something
+}
+
+
+impl Render for DOFCamera {
+    fn render(&self, scene: Vec<Box<dyn Object>>, width: u32, height: u32, samples: u32, filename: String) {
+        // The resulting image
+        let mut finalimg: RgbImage = ImageBuffer::new(width, height);
+        // The other 2 vectors for an orthonormal basis
+        let (side, up) = directions(self.looking, self.global_up);
+
+        let mut direction: Vec3;
+        // Positions for direction or something
+        let mut u: f32;
+        let mut v: f32;
+
+        let half_height = (self.fov/2.).tan();
+        let half_width = half_height * (width as f32) / (height as f32);
+
+        // The resulting colour at a point
+        let mut col: Colour;
+        // The seed
+        let mut seed: u32 = 4839;
+        
+        // Random variables for aperture
+        let mut rand_disc: Vec3;
+        let mut offset: Vec3;
+        let horizontal = 2. * half_width * self.focus * side;
+        let vertical = 2. * half_height * self.focus * up;
+
+
+        for (x, y, pixel) in finalimg.enumerate_pixels_mut() {
+            // Initialise the colour
+            col = Colour::black();
+            
+            for _ in 0..samples {
+                u = ((2.*x as f32)/((width-1) as f32) - 1.)*(width as f32)/(height as f32);
+                v = (-2.*y as f32)/((height-1) as f32) + 1.;
+    
+                // Maybe these constants are off; unknown
+                //u += (random_float(&mut seed) - 0.5)/(height as f32 - 1.)*2.;
+                //v += (random_float(&mut seed) - 0.5)/(height as f32 - 1.)*2.;
+
+                
+                // Aperture part:
+                rand_disc = random_unit_disc(&mut seed);
+                offset = side * rand_disc.x() + up * rand_disc.y();
+                direction = ((1./half_height) * self.looking + u * side + v * up).normalise() * self.focus;
+                
+                col += trace(self.position + offset, (direction - offset).normalise(), &scene, 4, &mut seed) //* (1./SAMPLES as f32);
             }
     
             *pixel = (col / samples as f32).clamp().to_rgb();
